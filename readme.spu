@@ -1,0 +1,41 @@
+git remote add upstream git@github.com:secretflow/spu.git
+git fetch upstream --tags
+git tag
+
+git checkout tags/0.9.0b2
+git checkout -b dev
+
+
+## start container
+Without Proxy:
+docker run -d -it --name spu-dev-$(whoami) \
+         --mount type=bind,source="$(pwd)",target=/home/admin/dev/ \
+         -w /home/admin/dev \
+         --cap-add=SYS_PTRACE --security-opt seccomp=unconfined \
+         --cap-add=NET_ADMIN \
+         --privileged=true \
+         --entrypoint="bash" \
+         secretflow/ubuntu-base-ci:latest
+
+
+
+With Proxy:
+docker run -d -it --name spu-dev-$(whoami) \
+         --mount type=bind,source="$(pwd)",target=/home/admin/dev/ \
+         -w /home/admin/dev \
+         --cap-add=SYS_PTRACE --security-opt seccomp=unconfined \
+         --cap-add=NET_ADMIN \
+         --privileged=true \
+         --entrypoint="bash" \
+         -e http_proxy="http://192.168.10.13:7890" \
+         -e https_proxy="http://192.168.10.13:7890" \
+         secretflow/ubuntu-base-ci:latest
+
+
+
+# attach to build container
+docker exec -it spu-dev-$(whoami) bash
+
+python setup.py bdist_wheel
+
+
