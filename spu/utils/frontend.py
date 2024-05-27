@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 import collections
 import functools
 from enum import Enum
@@ -187,6 +188,40 @@ def _restore_jax_patch(patch_history):
         _patch_fcn(lax, fcn_name, fcn)
 
 
+#=============================================================================
+def log_init(log_file_path,logger_name,file_level):
+     # 创建日志器
+    logger = logging.getLogger(logger_name)
+    # 为日志器设置日志等级，如果这里不设置，将会使用其父级日志器的等日志等级
+    # 这里它的父日志器是root，root的默认日志级别是 logging.WARNING
+    logger.setLevel(logging.INFO)
+
+    # 创建文件处理程序
+    fh = logging.FileHandler(filename=log_file_path,encoding="utf8")
+
+    # 为文件处理程序设置日志等级
+    fh.setLevel(file_level)
+
+    # 创建格式化程序
+    ffmt = logging.Formatter(
+        fmt = "%(asctime)s - %(levelname)s - %(name)s - %(filename)s:%(lineno)d - %(message)s",
+        datefmt = "%Y/%m/%d %H:%M:%S"
+    )
+
+    # 将 ffmt 格式化程序应用到 fh 文件处理程序
+    fh.setFormatter(ffmt)
+
+    # 将文件处理程序应用到logger日志器
+    logger.addHandler(fh)
+
+    # # 记录日志信息
+    # logger.debug("This is a DEBUG log.")
+    # logger.info("This is an INFO log.")
+    # logger.warning("This is a WARNING log.")
+    # logger.error("This is an ERROR log.")
+    # logger.critical("This is a CRITICAL log.")
+    return logger
+    
 ##
 
 
@@ -208,6 +243,9 @@ def compile(
     static_argnames=None,
     copts=spu_pb2.CompilerOptions(),
 ):
+    spu_frontend_logger=log_init('spu-compiler.log','spu-compiler',logging.INFO)
+    spu_frontend_logger.info('Start spu frontedn compiling.')
+    
     if kind == Kind.JAX:
         import jax
 
