@@ -40,29 +40,22 @@ ENABLE_GPU_BUILD = os.getenv("ENABLE_GPU_BUILD")
 pyd_suffix = ".so"
 
 
-def add_date_to_version(*filepath):
-    local_time = datetime.utcnow()
-    chn_time = local_time + timedelta(hours=8)
-    dstr = chn_time.strftime("%Y%m%d")
+def find_version(*filepath):
+    local_time = datetime.now()
+    # convert local_date to string with date and time info
+    dstr=local_time.strftime("%m%d.%H%M")
     with open(os.path.join(ROOT_DIR, *filepath), "r") as fp:
         content = fp.read()
 
-    content = content.replace("$$DATE$$", dstr)
+    content = content.replace("$$BUILD$$", dstr)
 
-    with open(os.path.join(ROOT_DIR, *filepath), "w+") as fp:
-        fp.write(content)
-
-
-def find_version(*filepath):
-    add_date_to_version(*filepath)
     # Extract version information from filepath
-    with open(os.path.join(ROOT_DIR, *filepath)) as fp:
-        version_match = re.search(
-            r"^__version__ = ['\"]([^'\"]*)['\"]", fp.read(), re.M
-        )
-        if version_match:
-            return version_match.group(1)
-        raise RuntimeError("Unable to find version string.")
+    version_match = re.search(
+        r"^__version__ = ['\"]([^'\"]*)['\"]", content, re.M
+    )
+    if version_match:
+        return version_match.group(1)
+    raise RuntimeError("Unable to find version string.")
 
 
 def read_requirements(*filepath):
@@ -251,7 +244,8 @@ if not SKIP_BAZEL_CLEAN:
     bazel_invoke(subprocess.check_call, ['clean'])
 
 # Default Linux platform tag
-plat_name = "manylinux2014_x86_64"
+# plat_name = "manylinux2014_x86_64"
+plat_name = ""
 
 if sys.platform == "darwin":
     # Due to a bug in conda x64 python, platform tag has to be 10_16 for X64 wheel
