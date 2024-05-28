@@ -245,7 +245,7 @@ if not SKIP_BAZEL_CLEAN:
 
 # Default Linux platform tag
 # plat_name = "manylinux2014_x86_64"
-plat_name = ""
+plat_name = "x86"
 
 if sys.platform == "darwin":
     # Due to a bug in conda x64 python, platform tag has to be 10_16 for X64 wheel
